@@ -84,7 +84,5 @@
 **Para** finalizar mi sesión de trabajo  
 
 **Criterios de aceptación:**  
-- La aplicación se cierra correctamente.
+- La aplicación se debe cerrar correctamente.
 
-
----
