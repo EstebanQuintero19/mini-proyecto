@@ -1,10 +1,25 @@
 from product import Product
 from decimal import Decimal
+import json
 
 class Inventory:
     def __init__(self):
         self.products = []  # lista de productos
-    
+
+    def save_to_file(self, filename): #guardado de datos en archivo JSON para conserver el inventario
+        with open(filename, 'w') as f:
+            json.dump([p.__dict__ for p in self.products], f)
+
+    def load_from_file(self, filename): #carga de datos desde archivo JSON para 'restaurar' el inventario
+        try:
+            with open(filename, 'r') as f:
+                products_data = json.load(f)
+                self.products = [Product(**data) for data in products_data]
+        except FileNotFoundError:
+            print("Archivo no encontrado.")
+        except json.JSONDecodeError:
+            print("Error al leer el archivo.")
+
     def add_product(self, name, category, price, quantity):
         # agregar nuevo producto a la lista
         try:
