@@ -5,10 +5,6 @@
 
 ## Tabla de Contenidos
 
-- [Descripción](#descripción)
-- [Características](#características)
-- [Estructura del Proyecto](#estructura-del-proyecto)
-- [Instalación](#instalación)
 - [Uso](#uso)
 - [Arquitectura](#arquitectura)
 - [Diagramas de Flujo](#diagramas-de-flujo)
