@@ -1,24 +1,57 @@
 from product import Product
 from decimal import Decimal
+from datetime import datetime
 import json
 
 class Inventory:
     def __init__(self):
         self.products = []  # lista de productos
 
-    def save_to_file(self, filename): #guardado de datos en archivo JSON para conserver el inventario
-        with open(filename, 'w') as f:
-            json.dump([p.__dict__ for p in self.products], f)
-
-    def load_from_file(self, filename): #carga de datos desde archivo JSON para 'restaurar' el inventario
+    def save_to_file(self, filename):
+        # guardado de datos en archivo JSON
         try:
-            with open(filename, 'r') as f:
+            products_data = []
+            for p in self.products:
+                # convertir a formato serializable
+                product_dict = {
+                    'name': p.name,
+                    'category': p.category,
+                    'price': str(p.price),  # Decimal a string
+                    'quantity': p.quantity,
+                    'created_at': p.created_at.isoformat()  # datetime a string ISO
+                }
+                products_data.append(product_dict)
+            
+            with open(filename, 'w', encoding='utf-8') as f:
+                json.dump(products_data, f, indent=2, ensure_ascii=False)
+            print(f"Inventario guardado en {filename}")
+        except Exception as e:
+            print(f"Error al guardar: {e}")
+
+    def load_from_file(self, filename):
+        # carga de datos desde archivo JSON
+        try:
+            with open(filename, 'r', encoding='utf-8') as f:
                 products_data = json.load(f)
-                self.products = [Product(**data) for data in products_data]
+            
+            self.products = []
+            for data in products_data:
+                # convertir de vuelta a tipos correctos
+                product = Product(
+                    name=data['name'],
+                    category=data['category'],
+                    price=Decimal(data['price']),  # string a Decimal
+                    quantity=data['quantity'],
+                    created_at=datetime.fromisoformat(data['created_at'])  # string ISO a datetime
+                )
+                self.products.append(product)
+            print(f"Inventario cargado desde {filename}: {len(self.products)} productos")
         except FileNotFoundError:
             print("Archivo no encontrado.")
         except json.JSONDecodeError:
-            print("Error al leer el archivo.")
+            print("Error al leer el archivo JSON.")
+        except Exception as e:
+            print(f"Error al cargar: {e}")
 
     def add_product(self, name, category, price, quantity):
         # agregar nuevo producto a la lista
@@ -136,4 +169,29 @@ class Inventory:
                 return True
         # si llego aquí, no encontré el producto
         print("Producto no encontrado.")
-        return False 
+        return False
+    
+    def show_inventory_chart(self):
+        # mostrar gráfica ASCII del stock de productos
+        if not self.products:
+            print("Inventario vacío.")
+            return
+        
+        print("\n=== GRÁFICA DE INVENTARIO ===")
+        # encontrar el máximo para escalar
+        max_quantity = max(p.quantity for p in self.products) if self.products else 0
+        
+        if max_quantity == 0:
+            print("Todos los productos sin stock.")
+            return
+        
+        # mostrar cada producto con su barra
+        for p in self.products:
+            # calcular longitud de la barra (máximo 50 caracteres)
+            bar_length = int((p.quantity / max_quantity) * 50) if max_quantity > 0 else 0
+            bar = "█" * bar_length
+            # mostrar nombre (truncado a 20 chars), barra y cantidad
+            name_display = p.name[:20].ljust(20)
+            print(f"{name_display} | {bar} {p.quantity}")
+        
+        print(f"\nEscala: cada █ representa ~{max_quantity/50:.1f} unidades") 
